@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Management</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    table { width: 100%; border-collapse: collapse; }
+    table, th, td { border: 2px solid black; }
+    th, td { padding: 10px; text-align: left; }
+  </style>
+</head>
+<body>
+
+<h1>Employee Management</h1>
+
+<!-- Employee Form -->
+<h2>Add Employee</h2>
+<form id="employeeForm">
+  <input type="text" id="name" placeholder="Employee Name" required><br><br>
+  <input type="text" id="position" placeholder="Position" required><br><br>
+  <input type="number" id="salary" placeholder="Salary" required><br><br>
+  <button type="submit">Add Employee</button>
+</form>
+
+<h2>Employee List</h2>
+<table id="employeeTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Position</th>
+      <th>Salary</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Employee data will appear here -->
+  </tbody>
+</table>
+
+<script>
+  // Fetch and display employee list
+  function getEmployees() {
+    fetch('http://localhost:5000/employees')
+      .then(response => response.json())
+      .then(data => {
+        const tableBody = document.querySelector('#employeeTable tbody');
+        tableBody.innerHTML = '';
+        data.forEach(employee => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${employee.name}</td>
+            <td>${employee.position}</td>
+            <td>${employee.salary}</td>
+            <td>
+              <button onclick="deleteEmployee('${employee._id}')">Delete</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+      });
+  }
+
+  // Add new employee
+  document.getElementById('employeeForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const position = document.getElementById('position').value;
+    const salary = document.getElementById('salary').value;
+
+    fetch('http://localhost:5000/employees', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name, position, salary })
+    })
+    .then(() => {
+      getEmployees(); // Reload the employee list
+      document.getElementById('employeeForm').reset();
+    });
+  });
+
+  // Delete employee
+  function deleteEmployee(id) {
+    fetch(`http://localhost:5000/employees/${id}`, {
+      method: 'DELETE'
+    })
+    .then(() => {
+      getEmployees(); // Reload the employee list
+    });
+  }
+
+  // Load employee list initially
+  getEmployees();
+</script>
+
+</body>
+</html>
